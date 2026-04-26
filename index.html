@@ -5,32 +5,42 @@
 </head>
 <body>
 
-<div id="company"></div>
+<div id="company">Chargement...</div>
 
 <script>
 async function loadCompany() {
-  const res = await fetch("https://secure-trust-sphere.base44.app/api/entities/Company", {
-    headers: {
-      "api_key": "8d8d59950a8c4038a52509b3072e21b7"
+  try {
+    const res = await fetch("https://secure-trust-sphere.base44.app/api/entities/Company", {
+      headers: {
+        "api_key": "8d8d59950a8c4038a52509b3072e21b7"
+      }
+    });
+
+    const data = await res.json();
+
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("client");
+
+    const company = data.find(c => c.trust_slug === slug);
+
+    const container = document.getElementById("company");
+
+    if (!company) {
+      container.innerHTML = "❌ Aucun client trouvé (vérifie le slug)";
+      return;
     }
-  });
 
-  const data = await res.json();
-
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get("client");
-
-  const company = data.find(c => c.trust_slug === slug);
-
-  const container = document.getElementById("company");
-
-  container.innerHTML = `
-    <h1>${company.company_name}</h1>
-    <p>${company.description}</p>
-    <div style="background:${company.hero_bg_color};padding:20px;color:white;">
-      Hero section
-    </div>
-  `;
+    container.innerHTML = `
+      <h1>${company.company_name}</h1>
+      <p>${company.description}</p>
+      <div style="background:${company.hero_bg_color || "#333"};padding:20px;color:white;">
+        Hero section
+      </div>
+    `;
+  } catch (e) {
+    document.getElementById("company").innerHTML = "❌ Erreur API";
+    console.error(e);
+  }
 }
 
 loadCompany();
